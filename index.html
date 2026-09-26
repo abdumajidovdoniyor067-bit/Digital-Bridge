@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Digital Bridge — Qishloq uchun raqamli tibbiy ko‘prik</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#0d7a7a" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Digital Bridge" />
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%230d7a7a'/%3E%3Ctext x='96' y='130' font-size='100' font-weight='800' fill='white' text-anchor='middle' font-family='Inter,sans-serif'%3EDB%3C/text%3E%3C/svg%3E" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+</head>
+<body>
+
+<!-- FON -->
+<div class="bg-medical"></div>
+<div class="bg-blob b1"></div>
+<div class="bg-blob b2"></div>
+<div class="bg-blob b3"></div>
+
+<!-- PROGRESS + OVERLAYS + TOAST -->
+<div class="progress-bar" id="progressBar"></div>
+<div class="sync-overlay" id="syncOverlay">
+  <div class="spinner"></div>
+  <p>Sinxronlanmoqda...</p>
+</div>
+<div class="toast" id="toast"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="wrap nav">
+    <div class="logo" onclick="showPage('landing')">
+      <div class="mark">DB</div>
+      Digital Bridge
+    </div>
+    <ul class="nav-menu" id="navMenu">
+      <li><button id="navBosh" class="active" onclick="showPage('landing')">
+        <svg width="16" height="16"><use href="#icon-home"/></svg> Bosh sahifa
+      </button></li>
+      <li><button id="navRoyxat" onclick="goToRoyxat()">
+        <svg width="16" height="16"><use href="#icon-user-plus"/></svg> Ro‘yxatga olish
+      </button></li>
+      <li><button id="navKuzatuv" onclick="goToKuzatuv()">
+        <svg width="16" height="16"><use href="#icon-eye"/></svg> Kuzatuv
+      </button></li>
+      <li><button id="navTolov" onclick="goToTolov()">
+        <svg width="16" height="16"><use href="#icon-credit-card"/></svg> To‘lovlar
+      </button></li>
+      <li><button id="navKomissiya" onclick="goToKomissiya()">
+        <svg width="16" height="16"><use href="#icon-briefcase"/></svg> Komissiya
+      </button></li>
+    </ul>
+    <div class="header-tools">
+      <button class="icon-btn" id="themeBtn" title="Tungi rejim">
+        <svg width="18" height="18"><use href="#icon-moon"/></svg>
+      </button>
+      <button class="btn sm" id="loginBtnTop" onclick="openLogin()">
+        <svg width="14" height="14"><use href="#icon-lock"/></svg> Kirish
+      </button>
+      <button class="btn sm" id="logoutBtnTop" onclick="logout()" style="display:none">
+        <svg width="14" height="14"><use href="#icon-log-out"/></svg> Chiqish
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ============ LANDING ============ -->
+<div class="page active" id="page-landing">
+  <section class="hero-landing wrap">
+    <div>
+      <p id="hamshiraInfo" style="display:none;color:var(--teal-dark);font-weight:600;margin-bottom:12px;font-size:14px;"></p>
+      <span class="kicker">🏥 Qishloq tibbiyoti uchun</span>
+      <h1>Bemor va davlat o‘rtasidagi <span class="accent">raqamli ko‘prik</span></h1>
+      <p class="lead">
+        Smartfoni yo‘q yoki interneti cheklangan qishloqlarda tibbiy ma’lumot tizimga kirmaydi.
+        Digital Bridge patronaj hamshirasiga planshet beradi: ma’lumot joyida kiritiladi,
+        internet bo‘lmasa ham saqlanadi, tarmoq paydo bo‘lganda davlat tizimiga uzatiladi.
+      </p>
+      <div class="hero-actions">
+        <button class="btn" onclick="openLogin()">
+          <svg width="16" height="16"><use href="#icon-lock"/></svg> Hamshira sifatida kirish
+        </button>
+        <button class="btn ghost" onclick="scrollToSection('loyiha-haqida')">📖 Batafsil</button>
+      </div>
+      <div class="hero-mini-stats">
+        <div class="mini-stat"><b>Offline</b><span>Internetsiz ishlaydi</span></div>
+        <div class="mini-stat"><b>🎖️ Imtiyoz</b><span>Avtomatik chegirma</span></div>
+        <div class="mini-stat"><b>💼 3% komissiya</b><span>Tizim daromadi</span></div>
+      </div>
+    </div>
+    <div class="hero-image">
+      <div class="hero-image-inner"></div>
+      <div class="hero-image-content">
+        <div class="big-icon">🩺</div>
+        <h3>Patronaj plansheti</h3>
+        <p>Bemor kartasi · Tashrif · Imtiyoz · DMed · Kvitansiya</p>
+      </div>
+      <div class="float-badge fb1">💼 3% komissiya</div>
+      <div class="float-badge fb2">🧾 Kvitansiya</div>
+    </div>
+  </section>
+
+  <section class="landing-section wrap" id="loyiha-haqida">
+    <h2>Loyiha haqida</h2>
+    <p class="subtitle">Digital Bridge — qishloq hududlarida tibbiy xizmatni raqamlashtirish uchun yaratilgan tizim.</p>
+    <div class="landing-grid">
+      <div class="landing-card">
+        <div class="landing-card-icon">🎯</div>
+        <h3>Maqsad</h3>
+        <p>Qishloq aholisini davlat tibbiy tizimiga ulash — smartfon yoki internet talab qilmasdan.</p>
+      </div>
+      <div class="landing-card">
+        <div class="landing-card-icon">💼</div>
+        <h3>Biznes model</h3>
+        <p>Har bir to‘lovdan <b>3% tizim komissiyasi</b>. Bemor uchun narx o‘zgarmaydi.</p>
+      </div>
+      <div class="landing-card">
+        <div class="landing-card-icon">🎖️</div>
+        <h3>Imtiyoz tizimi</h3>
+        <p>Nafaqaxorlar, nogironlar, veteranlar uchun avtomatik chegirma — 30% dan 100% gacha.</p>
+      </div>
+      <div class="landing-card">
+        <div class="landing-card-icon">🏥</div>
+        <h3>DMed integratsiyasi</h3>
+        <p>JSHSHIR bo‘yicha bemor tarixini olish, tashxis va retseptlarni ko‘rish.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="landing-section wrap" id="bolimlar">
+    <h2>Batafsil ma’lumot</h2>
+    <p class="subtitle">Har bir bo‘limni bosib, batafsil ma’lumot oling.</p>
+    <div class="choice-grid">
+      <div class="choice-card" onclick="openPanel('muammo')">
+        <div class="choice-icon-bg">🚨</div>
+        <div class="choice-title">Muammo</div>
+        <div class="choice-desc">Raqamli tafovut</div>
+      </div>
+      <div class="choice-card" onclick="openPanel('yechim')">
+        <div class="choice-icon-bg">💡</div>
+        <div class="choice-title">Yechim</div>
+        <div class="choice-desc">Offline-first planshet</div>
+      </div>
+      <div class="choice-card" onclick="openPanel('foyda')">
+        <div class="choice-icon-bg">🏛️</div>
+        <div class="choice-title">Davlatga foyda</div>
+        <div class="choice-desc">Iqtisodiy, tibbiy</div>
+      </div>
+      <div class="choice-card" onclick="openPanel('texnologiya')">
+        <div class="choice-icon-bg">⚙️</div>
+        <div class="choice-title">Texnologiya</div>
+        <div class="choice-desc">Arxitektura</div>
+      </div>
+      <div class="choice-card" onclick="openPanel('biznes')">
+        <div class="choice-icon-bg">💼</div>
+        <div class="choice-title">Biznes model</div>
+        <div class="choice-desc">3% komissiya</div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============ RO'YXATGA OLISH ============ -->
+<div class="page" id="page-royxat">
+  <div class="wrap app-main">
+    <section class="block">
+      <p class="kicker">Hamshira moduli</p>
+      <h2 style="font-size:28px;margin:8px 0 14px;">Yangi bemor ro‘yxatga olish</h2>
+      <p class="lead">Viloyat va tuman avtomatik to‘ldiriladi.</p>
+
+      <form class="panel" id="form" novalidate style="margin-top:20px">
+        <h3>👤 Shaxs maʼlumotlari</h3>
+        <div class="form-grid" style="margin-top:14px">
+          <div class="full">
+            <label for="fish">F.I.Sh.</label>
+            <input id="fish" required placeholder="Familiya Ism Sharif" />
+            <div class="err" data-err="fish"></div>
+          </div>
+          <div>
+            <label for="jins">Jinsi</label>
+            <select id="jins" required>
+              <option value="">Tanlang</option>
+              <option>Ayol</option>
+              <option>Erkak</option>
+            </select>
+            <div class="err" data-err="jins"></div>
+          </div>
+          <div>
+            <label for="tugilgan">Tugʻilgan sana</label>
+            <input id="tugilgan" type="date" required />
+            <div class="err" data-err="tugilgan"></div>
+          </div>
+          <div>
+            <label for="jshshir">JSHSHIR (14 raqam)</label>
+            <input id="jshshir" inputmode="numeric" maxlength="14" placeholder="00000000000000" />
+            <div class="err" data-err="jshshir"></div>
+          </div>
+          <div>
+            <label for="tel">Telefon (ixtiyoriy)</label>
+            <input id="tel" placeholder="+998 90 123 45 67" />
+            <div class="err" data-err="tel"></div>
+          </div>
+          <div class="full">
+            <label for="guruh">Tibbiy kuzatuv guruhi</label>
+            <select id="guruh" required>
+              <option value="">Tanlang</option>
+              <option>Umumiy patronaj</option>
+              <option>Homilador / yangi ona</option>
+              <option>0–1 yosh bola</option>
+              <option>Surunkali kasallik</option>
+              <option>OvaBMU dan chiqarilgan ogʻir bemor</option>
+              <option>Nogironlik kuzatuvi</option>
+            </select>
+            <div class="err" data-err="guruh"></div>
+          </div>
+        </div>
+
+        <h3 style="margin-top:28px">📍 Yashash hududi</h3>
+        <p class="path" id="path">Hudud tanlanmagan</p>
+        <div class="form-grid">
+          <div>
+            <label>Tuman / shahar (akkauntdan)</label>
+            <input id="tumanDisplay" disabled />
+          </div>
+          <div>
+            <label for="punkt">Qishloq / ovul / shaharcha</label>
+            <input id="punkt" list="punktList" required placeholder="Qishloq yoki shaharcha" autocomplete="off" />
+            <datalist id="punktList"></datalist>
+            <div class="err" data-err="punkt"></div>
+          </div>
+          <div class="full">
+            <label for="mahalla">Mahalla / MFY</label>
+            <input id="mahalla" required />
+            <div class="err" data-err="mahalla"></div>
+          </div>
+          <div>
+            <label for="kucha">Koʻcha / kvartal</label>
+            <input id="kucha" required />
+            <div class="err" data-err="kucha"></div>
+          </div>
+          <div>
+            <label for="uy">Uy / xonadon</label>
+            <input id="uy" required />
+            <div class="err" data-err="uy"></div>
+          </div>
+        </div>
+
+        <h3 style="margin-top:28px">🎖️ Imtiyoz ma’lumotlari</h3>
+        <div class="locked-note gold">Imtiyoz toifasini tanlasangiz — chegirma <b>avtomatik</b> hisoblanadi.</div>
+        <div class="form-grid" style="margin-top:14px">
+          <div>
+            <label for="imtiyozTuri">Imtiyoz toifasi</label>
+            <select id="imtiyozTuri">
+              <option value="">Imtiyoz yo‘q</option>
+            </select>
+          </div>
+          <div>
+            <label for="imtiyozFoiz">Chegirma (%)</label>
+            <input id="imtiyozFoiz" type="number" min="0" max="100" value="0" readonly style="background:color-mix(in srgb, var(--card) 90%, var(--line));cursor:not-allowed" />
+          </div>
+          <div>
+            <label for="imtiyozHujjat">Imtiyoz hujjati raqami</label>
+            <input id="imtiyozHujjat" placeholder="Masalan: №12345" />
+          </div>
+          <div class="full">
+            <label>📎 Imtiyoz hujjati (rasm yoki PDF)</label>
+            <div class="file-upload-zone" id="fileUploadZone">
+              <input type="file" id="imtiyozFayl" accept="image/*,.pdf" style="display:none" />
+              <div class="file-upload-content">
+                <div class="file-icon">📎</div>
+                <p><b>Hujjatni yuklang</b></p>
+                <p style="font-size:12px;color:var(--muted)">Rasm yoki PDF · maks 2 MB · Click yoki Drag & Drop</p>
+              </div>
+            </div>
+            <div id="filePreview"></div>
+          </div>
+        </div>
+
+        <h3 style="margin-top:28px">🏥 DMed tizimi</h3>
+        <div class="locked-note dmed">DMed — davlat tibbiyot tizimi. JSHSHIR bo‘yicha bemor tarixini olish mumkin.</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px">
+          <button type="button" class="btn dmed" id="dmedFetchBtn">
+            <svg width="16" height="16"><use href="#icon-search"/></svg> DMed’dan ma’lumot olish
+          </button>
+          <span id="dmedStatusText" style="font-size:13px;color:var(--muted)"></span>
+        </div>
+        <div id="dmedResult"></div>
+
+        <h3 style="margin-top:28px">💊 Xizmatlar va to‘lov</h3>
+        <div class="locked-note">Narxlar <b>markaziy tizimdan</b> yuklanadi. Hamshira narxni o‘zgartira olmaydi.</div>
+
+        <div class="services-grid" id="servicesGrid"></div>
+
+        <div class="total-box">
+          <span class="label">Jami to‘lov:</span>
+          <span class="value" id="totalPrice">0 so‘m</span>
+        </div>
+
+        <div class="commission-box">
+          <div class="row">
+            <span class="label">💼 Tizim komissiyasi (3%)</span>
+            <span class="value" id="commissionValue">0 so‘m</span>
+          </div>
+          <div class="row">
+            <span class="label">🏥 Hamshira/davlat hisobiga</span>
+            <span class="value" id="netValue">0 so‘m</span>
+          </div>
+          <div class="row total">
+            <span class="label">💼 Digital Bridge daromadi</span>
+            <span class="value" id="commissionTotal">0 so‘m</span>
+          </div>
+        </div>
+
+        <div class="locked-note commission">Komissiya <b>davlat bilan kelishilgan</b>. Bemor uchun narx o‘zgarmaydi.</div>
+
+        <div class="form-grid" style="margin-top:20px">
+          <div>
+            <label for="tolovTuri">To‘lov turi</label>
+            <select id="tolovTuri" required>
+              <option value="">Tanlang</option>
+              <option value="naqd">💵 Naqd</option>
+              <option value="karta">💳 Plastik karta</option>
+              <option value="online">📱 Online to‘lov</option>
+              <option value="bepul">🆓 Bepul (davlat)</option>
+            </select>
+            <div class="err" data-err="tolovTuri"></div>
+          </div>
+          <div>
+            <label for="tolovHolati">To‘lov holati</label>
+            <select id="tolovHolati" required>
+              <option value="tolandi">✅ To‘landi</option>
+              <option value="kutilmoqda">⏳ Kutilmoqda</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="hero-actions">
+          <button class="btn" type="submit">✅ Ro‘yxatga olish + Kvitansiya</button>
+          <button class="btn ghost" type="reset" id="resetBtn">Tozalash</button>
+        </div>
+        <p id="result" style="margin-top:12px;color:var(--muted)"></p>
+      </form>
+
+      <div class="panel" style="margin-top:30px">
+        <div class="bl-head">
+          <h3>📋 Mening bemorlarim</h3>
+          <span class="bl-count" id="blCount">0 ta</span>
+        </div>
+        <div class="filter-panel" style="margin-top:16px">
+          <input id="qidiruv" placeholder="🔍 Qidirish..." />
+          <select id="filterGuruh">
+            <option value="">Barcha guruhlar</option>
+            <option>Umumiy patronaj</option>
+            <option>Homilador / yangi ona</option>
+            <option>0–1 yosh bola</option>
+            <option>Surunkali kasallik</option>
+            <option>OvaBMU dan chiqarilgan ogʻir bemor</option>
+            <option>Nogironlik kuzatuvi</option>
+          </select>
+          <select id="filterImtiyoz">
+            <option value="">Barcha bemorlar</option>
+            <option value="imtiyozli">🎖️ Faqat imtiyozlilar</option>
+            <option value="imtiyozsiz">Oddiy bemorlar</option>
+            <option value="dmed">🏥 DMed’da bor</option>
+            <option value="hujjat">📎 Hujjati bor</option>
+          </select>
+        </div>
+        <div class="bl-scroll">
+          <table class="bl-table">
+            <thead>
+              <tr>
+                <th>#</th><th>F.I.Sh.</th><th>Guruh</th><th>Manzil</th>
+                <th>Summa</th><th>Imtiyoz</th><th>Komissiya</th><th>Holat</th><th>Amallar</th>
+              </tr>
+            </thead>
+            <tbody id="blBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- ============ KUZATUV ============ -->
+<div class="page" id="page-kuzatuv">
+  <div class="wrap app-main">
+    <section class="block">
+      <p class="kicker">OvaBMU moduli</p>
+      <h2 style="font-size:28px;margin:8px 0 14px;">Chiqish varaqasi — Kuzatuv</h2>
+      <p class="lead">OvaBMU dan chiqqan og‘ir bemorni patronajga biriktirish.</p>
+
+      <form class="panel" id="kuzatuvForm" style="margin-top:20px">
+        <h3>Bemor ma’lumotlari</h3>
+        <div class="form-grid" style="margin-top:14px">
+          <div class="full">
+            <label for="kFish">Bemor F.I.Sh.</label>
+            <input id="kFish" required placeholder="Familiya Ism Sharif" />
+            <div class="err" data-err="kFish"></div>
+          </div>
+          <div class="full">
+            <label for="kTashxis">Tashxis</label>
+            <input id="kTashxis" required placeholder="Masalan: O‘tkir miokard infarkti" />
+            <div class="err" data-err="kTashxis"></div>
+          </div>
+          <div>
+            <label for="kChiqish">Chiqish sanasi</label>
+            <input id="kChiqish" type="date" required />
+            <div class="err" data-err="kChiqish"></div>
+          </div>
+          <div>
+            <label for="kTashrif">Birinchi tashrif sanasi</label>
+            <input id="kTashrif" type="date" required />
+            <div class="err" data-err="kTashrif"></div>
+          </div>
+          <div class="full">
+            <label for="kIzoh">Izoh</label>
+            <textarea id="kIzoh" rows="3" placeholder="Dori, parhez, cheklovlar..."></textarea>
+          </div>
+        </div>
+        <div class="hero-actions">
+          <button class="btn" type="submit">Patronajga biriktirish</button>
+          <button class="btn ghost" type="reset">Tozalash</button>
+        </div>
+        <p id="kResult" style="margin-top:12px;color:var(--muted)"></p>
+      </form>
+
+      <div class="panel" style="margin-top:30px">
+        <div class="bl-head">
+          <h3>Kuzatuvdagi bemorlar</h3>
+          <span class="bl-count" id="kCount">0 ta</span>
+        </div>
+        <div class="bl-scroll">
+          <table class="bl-table">
+            <thead>
+              <tr>
+                <th>#</th><th>F.I.Sh.</th><th>Tashxis</th><th>Chiqish</th>
+                <th>Birinchi tashrif</th><th>Holat</th><th>Amallar</th>
+              </tr>
+            </thead>
+            <tbody id="kBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- ============ TO'LOVLAR ============ -->
+<div class="page" id="page-tolov">
+  <div class="wrap app-main">
+    <section class="block">
+      <p class="kicker">Moliya moduli</p>
+      <h2 style="font-size:28px;margin:8px 0 14px;">To‘lovlar tarixi</h2>
+      <p class="lead">Barcha to‘lovlar, kvitansiyalar, imtiyozlar va komissiyalar.</p>
+
+      <div class="stats-row" style="margin-bottom:30px">
+        <div class="stat-box"><b id="tlJami">0</b><span>so‘m — jami</span></div>
+        <div class="stat-box"><b id="tlTolangan">0</b><span>so‘m — to‘langan</span></div>
+        <div class="stat-box"><b id="tlKutilmoqda">0</b><span>so‘m — kutilmoqda</span></div>
+        <div class="stat-box"><b id="tlSoni">0</b><span>ta operatsiya</span></div>
+        <div class="stat-box commission"><b id="tlKomissiya">0</b><span>so‘m — komissiya (3%)</span></div>
+        <div class="stat-box"><b id="tlImtiyozSumma">0</b><span>so‘m — chegirma</span></div>
+      </div>
+
+      <div class="panel">
+        <div class="bl-head">
+          <h3>💰 To‘lov tarixi</h3>
+          <span class="bl-count" id="tlCount">0 ta</span>
+        </div>
+        <div class="filter-panel" style="margin-top:16px">
+          <input id="tlQidiruv" placeholder="🔍 F.I.Sh. yoki kvitansiya..." />
+          <select id="tlFilterTuri">
+            <option value="">Barcha turlar</option>
+            <option value="naqd">💵 Naqd</option>
+            <option value="karta">💳 Karta</option>
+            <option value="online">📱 Online</option>
+            <option value="bepul">🆓 Bepul</option>
+          </select>
+          <select id="tlFilterHolat">
+            <option value="">Barcha holatlar</option>
+            <option value="tolandi">✅ To‘landi</option>
+            <option value="kutilmoqda">⏳ Kutilmoqda</option>
+          </select>
+        </div>
+        <div class="bl-scroll">
+          <table class="bl-table">
+            <thead>
+              <tr>
+                <th>#</th><th>Kvitansiya №</th><th>Bemor</th><th>Sana</th>
+                <th>Summa</th><th>Imtiyoz</th><th>Komissiya 3%</th><th>To‘lov</th><th>Holat</th><th>Amallar</th>
+              </tr>
+            </thead>
+            <tbody id="tlBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- ============ KOMISSIYA ============ -->
+<div class="page" id="page-komissiya">
+  <div class="wrap app-main">
+    <section class="block">
+      <p class="kicker">Biznes moduli</p>
+      <h2 style="font-size:28px;margin:8px 0 14px;">💼 Tizim komissiyasi (3%)</h2>
+      <p class="lead">Digital Bridge daromadi — har bir to‘lovdan 3% komissiya.</p>
+
+      <div class="stats-row" style="margin-bottom:30px">
+        <div class="stat-box commission"><b id="kmJami">0</b><span>so‘m — jami komissiya</span></div>
+        <div class="stat-box commission"><b id="kmBugun">0</b><span>so‘m — bugun</span></div>
+        <div class="stat-box commission"><b id="kmOy">0</b><span>so‘m — bu oy</span></div>
+        <div class="stat-box"><b id="kmOperatsiya">0</b><span>ta operatsiya</span></div>
+        <div class="stat-box"><b id="kmOrtacha">0</b><span>so‘m — o‘rtacha komissiya</span></div>
+        <div class="stat-box"><b id="kmFoiz">3%</b><span>komissiya stavkasi</span></div>
+      </div>
+
+      <!-- 📊 GRAFIKLAR -->
+      <div class="charts-grid" style="margin-bottom:30px">
+        <div class="chart-card">
+          <h3>📈 Komissiya dinamikasi (7 kun)</h3>
+          <div class="chart-container">
+            <canvas id="chartKomissiya"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h3>💊 Eng ko'p xizmatlar</h3>
+          <div class="chart-container">
+            <canvas id="chartXizmatlar"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h3>🎖️ Imtiyozli bemorlar</h3>
+          <div class="chart-container">
+            <canvas id="chartImtiyoz"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:30px">
+        <h3>📊 Komissiya hisoboti</h3>
+        <p style="color:var(--muted);font-size:14px;margin-top:8px">
+          Komissiya <b>davlat bilan kelishilgan</b>. Bemor uchun narx o‘zgarmaydi — faqat tizim 3% oladi.
+        </p>
+        <div class="commission-box" style="margin-top:20px">
+          <div class="row">
+            <span class="label">💼 Tizim komissiyasi stavkasi</span>
+            <span class="value">3%</span>
+          </div>
+          <div class="row">
+            <span class="label">📅 Bugungi komissiya</span>
+            <span class="value" id="kmBugun2">0 so‘m</span>
+          </div>
+          <div class="row">
+            <span class="label">📆 Shu oy komissiya</span>
+            <span class="value" id="kmOy2">0 so‘m</span>
+          </div>
+          <div class="row">
+            <span class="label">📈 Jami komissiya</span>
+            <span class="value" id="kmJami2">0 so‘m</span>
+          </div>
+          <div class="row total">
+            <span class="label">💰 Sof tushum</span>
+            <span class="value" id="kmSof">0 so‘m</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="bl-head">
+          <h3>💼 Komissiya tarixi</h3>
+          <span class="bl-count" id="kmCount">0 ta</span>
+        </div>
+        <div class="bl-scroll">
+          <table class="bl-table">
+            <thead>
+              <tr>
+                <th>#</th><th>Kvitansiya</th><th>Bemor</th><th>Sana</th>
+                <th>Summa</th><th>Komissiya 3%</th><th>Holat</th><th>Amallar</th>
+              </tr>
+            </thead>
+            <tbody id="kmBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- ============ LOGIN ============ -->
+<div class="login-panel" id="loginPanel">
+  <div class="login-card">
+    <div class="mark">DB</div>
+    <h2>Hamshira kirishi</h2>
+    <p class="sub">Akkauntingizga kiring yoki yangi yarating</p>
+    <div class="login-tabs">
+      <button class="login-tab active" id="tabKirish" onclick="switchLoginTab('kirish')">🔐 Kirish</button>
+      <button class="login-tab" id="tabRoyxat" onclick="switchLoginTab('royxat')">➕ Ro‘yxatdan o‘tish</button>
+    </div>
+    <form class="login-form active" id="formKirish">
+      <div class="login-field"><label for="kirishTel">Telefon raqam</label><input id="kirishTel" placeholder="+998901234567" required /></div>
+      <div class="login-field"><label for="kirishPin">PIN kod</label><input id="kirishPin" class="pin-display" type="password" maxlength="4" placeholder="••••" inputmode="numeric" required /></div>
+      <div class="login-msg" id="msgKirish"></div>
+      <div class="login-actions">
+        <button class="btn" type="submit">Kirish</button>
+        <button class="btn ghost" type="button" onclick="closeLogin()">Bekor</button>
+      </div>
+      <p class="login-hint">Demo: <b>+998901234567</b> / PIN: <b>1234</b></p>
+    </form>
+    <form class="login-form" id="formRoyxat">
+      <div class="login-field"><label for="regFish">F.I.Sh.</label><input id="regFish" placeholder="Familiya Ism Sharif" required /></div>
+      <div class="login-field"><label for="regViloyat">Viloyat</label><select id="regViloyat" required></select></div>
+      <div class="login-field"><label for="regTuman">Tuman / shahar</label><select id="regTuman" required disabled><option value="">Avval viloyatni tanlang</option></select></div>
+      <div class="login-field"><label for="regTel">Telefon raqam</label><input id="regTel" placeholder="+998901234567" required /></div>
+      <div class="login-field"><label for="regPin">PIN kod</label><input id="regPin" class="pin-display" type="password" maxlength="4" placeholder="••••" inputmode="numeric" required /></div>
+      <div class="login-msg" id="msgRoyxat"></div>
+      <div class="login-actions">
+        <button class="btn" type="submit">Ro‘yxatdan o‘tish</button>
+        <button class="btn ghost" type="button" onclick="closeLogin()">Bekor</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ PANELLAR ============ -->
+<section class="content-panel" id="panel-muammo">
+  <div class="panel-header">
+    <div class="panel-title"><div class="panel-title-icon">🚨</div>Muammo</div>
+    <button class="back-btn" onclick="closePanel()">← Orqaga</button>
+  </div>
+  <div class="panel-body">
+    <h2>Qishloqda raqamli tafovut</h2>
+    <p class="subtitle">Qishloq aholisining katta qismi smartfon yoki barqaror internetga ega emas.</p>
+    <div class="cards">
+      <div class="card problem"><div class="card-icon">📵</div><h3>Smartfon yo‘q</h3><p>~40% aholi smartfonsiz.</p></div>
+      <div class="card problem"><div class="card-icon">🌐</div><h3>Internet yo‘q</h3><p>60% qishloqda barqaror internet yo‘q.</p></div>
+      <div class="card problem"><div class="card-icon">📋</div><h3>Qog‘ozda qoladi</h3><p>Patronaj tashriflari yo‘qoladi.</p></div>
+      <div class="card problem"><div class="card-icon">🏥</div><h3>Kuzatuvsiz bemor</h3><p>OvaBMU’dan chiqqan bemorlar nazoratsiz.</p></div>
+      <div class="card problem"><div class="card-icon">💰</div><h3>Narx shaffof emas</h3><p>Bemor qancha to‘lashini bilmaydi.</p></div>
+      <div class="card problem"><div class="card-icon">🎖️</div><h3>Imtiyoz hisobga olinmaydi</h3><p>Nafaqaxor, nogiron, veteranlar chegirma olmaydi.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="content-panel" id="panel-yechim">
+  <div class="panel-header">
+    <div class="panel-title"><div class="panel-title-icon">💡</div>Yechim</div>
+    <button class="back-btn" onclick="closePanel()">← Orqaga</button>
+  </div>
+  <div class="panel-body">
+    <h2>Patronaj hamshirasi plansheti</h2>
+    <p class="subtitle">Hamshira ma’lumotni planshetga kiritadi, kvitansiya chiqaradi.</p>
+    <div class="cards">
+      <div class="card solution"><div class="card-icon">📱</div><h3>Maxsus planshet</h3><p>Bemor kartasi, tashrif, o‘lchovlar.</p></div>
+      <div class="card solution"><div class="card-icon">🔌</div><h3>Offline-first</h3><p>Internetsiz ham saqlanadi.</p></div>
+      <div class="card solution"><div class="card-icon">💰</div><h3>Narx qat‘iy</h3><p>Markaziy narx — qo‘shimcha pul olish imkonsiz.</p></div>
+      <div class="card solution"><div class="card-icon">🎖️</div><h3>Imtiyoz tizimi</h3><p>Nafaqaxorlar, nogironlar, veteranlar uchun avtomatik chegirma.</p></div>
+      <div class="card solution"><div class="card-icon">🏥</div><h3>DMed integratsiya</h3><p>JSHSHIR bo‘yicha bemor tarixi, tashxis va retseptlar.</p></div>
+      <div class="card solution"><div class="card-icon">💼</div><h3>3% komissiya</h3><p>Tizim har bir to‘lovdan 3% oladi. Bemor uchun narx o‘zgarmaydi.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="content-panel" id="panel-foyda">
+  <div class="panel-header">
+    <div class="panel-title"><div class="panel-title-icon">🏛️</div>Davlatga foyda</div>
+    <button class="back-btn" onclick="closePanel()">← Orqaga</button>
+  </div>
+  <div class="panel-body">
+    <h2>Davlat uchun aniq foyda</h2>
+    <p class="subtitle">Iqtisodiy tejash, tibbiy yaxshilanish, shaffoflik.</p>
+    <div class="cards">
+      <div class="card"><div class="card-icon">💰</div><h3>Iqtisodiy tejash</h3><p>Qayta yotqizish 30% kamayadi. Yiliga ~200 mlrd so‘m tejash.</p></div>
+      <div class="card"><div class="card-icon">🔍</div><h3>Korrupsiyaga qarshi</h3><p>Har bir to‘lov qayd etiladi. Qo‘shimcha pul olish imkonsiz.</p></div>
+      <div class="card"><div class="card-icon">🎖️</div><h3>Imtiyoz nazorati</h3><p>Nafaqaxor, nogiron, veteranlar chegirmasi avtomatik.</p></div>
+      <div class="card"><div class="card-icon">🏥</div><h3>DMed integratsiya</h3><p>Davlat tibbiy tizimi bilan to‘liq bog‘lanish.</p></div>
+      <div class="card"><div class="card-icon">📊</div><h3>To‘liq statistika</h3><p>Har bir to‘lov markaziy bazada.</p></div>
+      <div class="card"><div class="card-icon">🌍</div><h3>Strategik foyda</h3><p>“Raqamli O‘zbekiston-2030”ga xizmat.</p></div>
+    </div>
+    <h2 style="margin-top:40px">Raqamlarda foyda</h2>
+    <div class="stats-row">
+      <div class="stat-box"><b>~200 mlrd</b><span>so‘m/yil tejash</span></div>
+      <div class="stat-box"><b>100%</b><span>To‘lov shaffofligi</span></div>
+      <div class="stat-box"><b>95%</b><span>Patronaj qamrovi</span></div>
+      <div class="stat-box"><b>0%</b><span>Qo‘shimcha pul olish</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="content-panel" id="panel-texnologiya">
+  <div class="panel-header">
+    <div class="panel-title"><div class="panel-title-icon">⚙️</div>Texnologiya</div>
+    <button class="back-btn" onclick="closePanel()">← Orqaga</button>
+  </div>
+  <div class="panel-body">
+    <h2>Tizim arxitekturasi</h2>
+    <p class="subtitle">Zamonaviy, ishonchli va xavfsiz texnologiyalar.</p>
+    <div class="tech-grid">
+      <div class="tech-item"><div class="tech-icon">📱</div><h4>Frontend</h4><p>React Native / Flutter</p></div>
+      <div class="tech-item"><div class="tech-icon">💾</div><h4>Mahalliy baza</h4><p>SQLite + SQLCipher</p></div>
+      <div class="tech-item"><div class="tech-icon">🖥️</div><h4>Server</h4><p>PostgreSQL + Node.js</p></div>
+      <div class="tech-item"><div class="tech-icon">💳</div><h4>To‘lov</h4><p>Payme, Click, Uzum Bank</p></div>
+      <div class="tech-item"><div class="tech-icon">💼</div><h4>Komissiya</h4><p>3% avtomatik hisoblash</p></div>
+      <div class="tech-item"><div class="tech-icon">🏥</div><h4>DMed API</h4><p>REST + OAuth 2.0</p></div>
+      <div class="tech-item"><div class="tech-icon">📎</div><h4>Fayl saqlash</h4><p>Base64 + CDN (real)</p></div>
+      <div class="tech-item"><div class="tech-icon">🔐</div><h4>Xavfsizlik</h4><p>AES-256, JWT, audit log</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="content-panel" id="panel-biznes">
+  <div class="panel-header">
+    <div class="panel-title"><div class="panel-title-icon">💼</div>Biznes model</div>
+    <button class="back-btn" onclick="closePanel()">← Orqaga</button>
+  </div>
+  <div class="panel-body">
+    <h2>3% komissiya modeli</h2>
+    <p class="subtitle">Digital Bridge daromadi — har bir to‘lovdan 3% komissiya. Bemor uchun narx o‘zgarmaydi.</p>
+
+    <div class="cards">
+      <div class="card commission"><div class="card-icon">💼</div><h3>3% komissiya</h3><p>Har bir xizmat to‘lovidan 3% tizim hisobiga. Davlat bilan kelishilgan.</p></div>
+      <div class="card commission"><div class="card-icon">🏥</div><h3>Davlat shartnomasi</h3><p>Litsenziya + oylik to‘lov har bir hamshira uchun.</p></div>
+      <div class="card commission"><div class="card-icon">📊</div><h3>Analytics</h3><p>Anonim statistika davlat idoralariga. Qo‘shimcha daromad.</p></div>
+      <div class="card commission"><div class="card-icon">🌍</div><h3>Eksport</h3><p>Markaziy Osiyo davlatlariga — 5 ta davlat.</p></div>
+    </div>
+
+    <h2 style="margin-top:40px">Raqamlarda daromad</h2>
+    <div class="stats-row">
+      <div class="stat-box commission"><b>3%</b><span>komissiya stavkasi</span></div>
+      <div class="stat-box commission"><b>5-6 mlrd</b><span>so‘m/yil — komissiyadan</span></div>
+      <div class="stat-box"><b>4.5 mlrd</b><span>so‘m/yil — davlat shartnomasi</span></div>
+      <div class="stat-box"><b>13 mlrd</b><span>so‘m/yil — jami</span></div>
+    </div>
+
+    <h2 style="margin-top:40px">Qanday hisoblanadi</h2>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><h4>Bemor to‘lov qiladi</h4><p>Masalan: 30,000 so‘m</p></div>
+      <div class="step"><div class="step-num">2</div><h4>Tizim 3% oladi</h4><p>30,000 × 3% = 900 so‘m</p></div>
+      <div class="step"><div class="step-num">3</div><h4>Qolgani davlatga</h4><p>29,100 so‘m hamshira/davlat hisobiga</p></div>
+      <div class="step"><div class="step-num">4</div><h4>Kvitansiya beriladi</h4><p>Bemor uchun narx o‘zgarmaydi</p></div>
+    </div>
+
+    <div class="commission-box" style="margin-top:30px">
+      <div class="row"><span class="label">1 bemor (o‘rtacha)</span><span class="value">30,000 so‘m</span></div>
+      <div class="row"><span class="label">Komissiya (3%)</span><span class="value">900 so‘m</span></div>
+      <div class="row"><span class="label">1 hamshira kuniga (10 bemor)</span><span class="value">9,000 so‘m</span></div>
+      <div class="row"><span class="label">1 hamshira oyiga (300 bemor)</span><span class="value">270,000 so‘m</span></div>
+      <div class="row"><span class="label">5,000 hamshira oyiga</span><span class="value">1.35 mlrd so‘m</span></div>
+      <div class="row total"><span class="label">Yiliga jami</span><span class="value">~16.2 mlrd so‘m</span></div>
+    </div>
+
+    <div class="locked-note commission" style="margin-top:24px">
+      <b>Muhim:</b> Komissiya <b>davlat bilan rasmiy kelishilgan</b> shartnoma asosida olinadi. Bemor uchun narx o‘zgarmaydi.
+    </div>
+  </div>
+</section>
+
+<!-- ============ MODAL KVITANSIYA ============ -->
+<div class="modal-bg" id="receiptBg">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-head">
+      <h3>🧾 Kvitansiya</h3>
+      <button class="modal-close" onclick="document.getElementById('receiptBg').classList.remove('open')">×</button>
+    </div>
+    <div id="receiptBody"></div>
+    <div class="receipt-actions">
+      <button class="btn" onclick="window.print()">
+        <svg width="14" height="14"><use href="#icon-receipt"/></svg> Chop etish
+      </button>
+      <button class="btn ghost" onclick="downloadReceipt()">
+        <svg width="14" height="14"><use href="#icon-download"/></svg> Yuklab olish
+      </button>
+      <button class="btn ghost" onclick="document.getElementById('receiptBg').classList.remove('open')">Yopish</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL BEMOR ============ -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modalTitle">Bemor kartasi</h3>
+      <button class="modal-close" onclick="document.getElementById('modalBg').classList.remove('open')">×</button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<!-- ============ MODAL AUDIT ============ -->
+<div class="modal-bg" id="auditBg">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>📋 Audit log</h3>
+      <button class="modal-close" onclick="document.getElementById('auditBg').classList.remove('open')">×</button>
+    </div>
+    <div id="auditBody" style="max-height:60vh;overflow-y:auto"></div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap" style="text-align:center">Digital Bridge for Rural Areas · © 2026 · 💼 3% komissiya modeli</div>
+</footer>
+
+<!-- ============ SVG IKONKALAR SPRITE ============ -->
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="icon-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+  </symbol>
+  <symbol id="icon-user-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/>
+  </symbol>
+  <symbol id="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>
+  </symbol>
+  <symbol id="icon-credit-card" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+  </symbol>
+  <symbol id="icon-briefcase" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+  </symbol>
+  <symbol id="icon-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+  </symbol>
+  <symbol id="icon-log-out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+  </symbol>
+  <symbol id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+  </symbol>
+  <symbol id="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+  </symbol>
+  <symbol id="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+  </symbol>
+  <symbol id="icon-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+  </symbol>
+  <symbol id="icon-receipt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M8 7h8M8 11h8M8 15h5"/>
+  </symbol>
+  <symbol id="icon-hospital" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 6v4M14 8h-4M4 22V4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v18"/><path d="M9 22v-4h6v4"/>
+  </symbol>
+  <symbol id="icon-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+  </symbol>
+  <symbol id="icon-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+  </symbol>
+  <symbol id="icon-award" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/>
+  </symbol>
+  <symbol id="icon-pill" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/>
+  </symbol>
+</svg>
+
+<script>
+  function icon(name, size = 18) {
+    return `<svg width="${size}" height="${size}" style="display:inline-block;vertical-align:middle"><use href="#icon-${name}"/></svg>`;
+  }
+</script>
+
+<!-- PWA O'RNATISH TUGMASI -->
+<button class="pwa-install-btn" id="pwaInstallBtn" onclick="pwaOrnat()">
+  <svg width="18" height="18"><use href="#icon-download"/></svg>
+  Ilovani o'rnatish
+</button>
+
+<script src="app.js"></script>
+</body>
+</html>
